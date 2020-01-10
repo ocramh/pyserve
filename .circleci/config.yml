@@ -10,15 +10,6 @@ jobs:
     steps:
       - checkout
 
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "requirements.txt" }}
-            - v1-dependencies-
-
-      # - run:
-      #     name: install dependencies
-      #     command: pip install -r requirements.txt
-
       - run:
           name: authenticate with GCP
           command: |
