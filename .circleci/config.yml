@@ -1,0 +1,29 @@
+version: 2
+
+jobs:
+  build:
+    working_directory: ~/app
+    docker:
+      - image: google/cloud-sdk:latest
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "requirements.txt" }}
+            - v1-dependencies-
+
+      - run:
+          name: install dependencies
+          command: pip install -r requirements.txt
+
+      - run:
+          name: authenticate with GCP
+          command: |
+            echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account --key-file=-
+            gcloud --quiet config project ${GOOGLE_PROJECT_ID}
+            gcloud --quiet config compute/zone ${GOOGLE_COMPUTE_ZONE}
+
+      - run:
+          name: list VMs
+          command: gcloud compute instances list
