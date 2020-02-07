@@ -1,0 +1,6 @@
+.gitignore
+.git
+.circleci
+
+docker-compose.yaml
+README.md
