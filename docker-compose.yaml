@@ -1,0 +1,62 @@
+version: "3.7"
+
+volumes:
+  prometheus_data: {}
+  grafana_data: {}
+
+services:
+  flask:
+    build:
+      context: .
+      dockerfile: build/Dockerfile
+    container_name: flask
+    env_file:
+      - .env
+    ports:
+      - "9797:9797"
+    depends_on:
+      - rabbitmq
+    volumes:
+      - .:/flask-celery
+
+  celery:
+    build:
+      context: .
+      dockerfile: build/Dockerfile
+    container_name: celery
+    environment:
+      - CELERY_BROKER_URL=amqp://rabbitmq:5672
+    command: celery -A server.app worker --loglevel=info --concurrency=3
+    depends_on:
+      - rabbitmq
+    volumes:
+      - .:/flask-celery
+
+  rabbitmq:
+    image: rabbitmq:3.8.2-alpine
+
+  prometheus:
+    image: prom/prometheus:v2.1.0
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - 9191:9090
+    restart: always
+
+  grafana:
+    image: grafana/grafana
+    user: "104"
+    depends_on:
+      - prometheus
+    ports:
+      - 3131:3000
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning/:/etc/grafana/provisioning/
+    env_file:
+      - ./grafana/config.monitoring
+    restart: always
