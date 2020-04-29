@@ -5,7 +5,7 @@ from flask import Flask
 import dramatiq
 from dramatiq.brokers.rabbitmq import RabbitmqBroker
 
-rabbitmq_broker = Rabbitmqroker(host="amqp://35.204.126.101", port=5672)
+rabbitmq_broker = RabbitmqBroker(host="35.204.126.101", port=5672)
 dramatiq.set_broker(rabbitmq_broker)
 
 flask_app = Flask(__name__)
