@@ -4,11 +4,10 @@ import time
 from flask import Flask
 import dramatiq
 from dramatiq.brokers.rabbitmq import RabbitmqBroker
-
 import torch
 from yolov3.yolov3 import Darknet
 
-rabbitmq_broker = Rabbitmqroker(host="amqp://35.204.126.101", port=5672)
+rabbitmq_broker = RabbitmqBroker(host="35.204.126.101", port=5672)
 dramatiq.set_broker(rabbitmq_broker)
 
 flask_app = Flask(__name__)
