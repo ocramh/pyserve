@@ -1,25 +1,27 @@
 REDIS_IMAGE=redis:5.0.7-alpine
 RABBITMQ_IMAGE=rabbitmq:3.8.2-alpine
 
-.PHONY: run-celery
-run-celery: ## run celery task queue
-	celery -A server.app worker --loglevel=info --concurrency=3 
+.PHONY: setup
+setup:
+	./scripts/env.sh
+
+.PHONY: run-rabbitmq
+run-rabbitmq: ## starts a rabbitmq docker container
+	docker run --rm -d \
+	--name rabbitmq \
+	--hostname rabbitmq \
+	-p 5672:5672 \
+	${RABBITMQ_IMAGE}
+
+.PHONY: run-dramatiq
+run-dramatiq: ## run dramatiq task queue
+	dramatiq app 
 
 .PHONY: run-flask
 run-flask: ## run the flask http server
 	python main.py
 
-.PHONY: run-redis
-run-redis: ## starts a redis docker container
-	docker run --rm -d \
-	--name dvr-redis \
-	-p 6379:6379 \
-	${REDIS_IMAGE} redis-server --appendonly yes
-
-.PHONY: run-rabbitmq
-run-rabbitmq: ## starts a rabbitmq docker container
-	docker run --rm -d \
-	--name dvr-rabbit \
-	--hostname dvr-rabbit \
-	-p 5672:5672 \
-	${RABBITMQ_IMAGE}
+.PHONY: clean
+clean: ## run the flask http server
+	conda deactivate dramatiq-test
+	conda env remove --name dramatiq-test
